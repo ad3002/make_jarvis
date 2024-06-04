@@ -2,7 +2,7 @@
 
 **Objectives:**
 
-Basic Solution (60 points):
+Basic Solution (70 points):
 
 * **Understanding Language Models Integration** - Learn how to incorporate and manage language models in your project to process and understand user input (10 points).
 * **Handling Dialogue** - Develop the capability to manage and sustain interactive dialogues with users (20 points).
