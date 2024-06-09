@@ -1,0 +1,6 @@
+pvporcupine==3.0.2
+pvrecorder==1.2.1
+pvrecorderdemo==1.2.2
+python-dotenv
+openai==1.31.1
+pydub==0.25.1
