@@ -1,0 +1,10 @@
+pvrecorder==1.2.1 
+pvrecorderdemo==1.2.2
+pvporcupine==3.0.2
+python_dotenv==1.0.1
+pydub==0.25.1
+packaging==24.1 
+replicate==0.26.0
+charset-normalizer==3.3.2
+requests==2.32.3
+urllib3==2.2.1
