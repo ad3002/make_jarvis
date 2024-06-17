@@ -4,12 +4,13 @@ import argparse
 import struct
 import os
 import struct
+import multiprocessing
+import replicate
 
 from dotenv import load_dotenv
 from stt import get_wav_file
-from agent import Agent
-import replicate
-from actions import answer_action
+from tts import interrupt_tts
+from actions import answer_action, proactive_thread
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -60,11 +61,14 @@ if __name__ == '__main__':
         "proactive_actions_thread": False
     }
 
-    agent = Agent(settings)
-    agent.start()
+    print("Listening... (press Ctrl+C to exit)")
+    event = multiprocessing.Event()
+    sound_process = None
+    ice_break = multiprocessing.Process(target=proactive_thread, args=(current_audio_file))
+    ice_break.start()
 
     try:
-        while agent.is_alive():
+        while True:
             pcm = recorder.read()
             result = porcupine.process(pcm)
 
@@ -75,12 +79,32 @@ if __name__ == '__main__':
                 if wav_file is not None:
                     wav_file.close()
                 print('Wake word detected: ', keyword2command[result])
-                agent.add_event({'type': keyword2command[result], 'result': None})
+                if keyword2command[result] == 'wakeword':
+                    sound_process = multiprocessing.Process(target=answer_action, args=(current_audio_file))
+                    sound_process.start()
+                elif keyword2command[result] == 'stopword':
+                    print('Stopping ...')
+                    event.set()
+                    if sound_process is not None:
+                        sound_process.join()
+                    ice_break.join()
+                    break
+                elif keyword2command[result] == 'interrupt':
+                    interrupt_tts()
+                    event.set()
+                    if sound_process is not None:
+                        sound_process.join()
+                    ice_break.join()
+                else:
+                    print(f"Unknown event type: {print('Stopping ...')}")
                 os.unlink(current_audio_file)
                 wav_file = get_wav_file(current_audio_file)
     except KeyboardInterrupt:
+        if sound_process is not None:
+            event.set()
+            sound_process.join()
+            ice_break.join()
         print('Stopping ...')
-        agent.stop()
     finally:
         recorder.stop()
         recorder.delete()

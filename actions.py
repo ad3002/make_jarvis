@@ -1,14 +1,13 @@
-import datetime
+import time
+import random
 from helpers import measure_time
 from stt import trascribe_audio_file
 from tts import say, interrupt_tts
 from llms import get_answer_from_llm, get_random_ice_break
 
-@measure_time
+# @measure_time
 def answer_action(
         current_audio_file,
-        st_memory=None,
-        lt_memory=None,
         current_transcript=None
     ):
     if not current_transcript:
@@ -18,23 +17,24 @@ def answer_action(
         transcription = current_transcript
 
     print(transcription)
-    answer = get_answer_from_llm(transcription, st_memory=st_memory, lt_memory=lt_memory)
+    answer = get_answer_from_llm(transcription)
 
-    if st_memory is not None:
-        st_memory.append(("user", transcription))
-        st_memory.append(("assistant", answer))
 
     print(answer)
 
     interrupt_tts()
-    say(answer)
+    say(answer, current_audio_file)
 
-@measure_time
-def proactive_action(st_memory=None, lt_memory=None):
-    answer = get_random_ice_break(st_memory=st_memory, lt_memory=lt_memory)
-
-    if st_memory is not None:
-        st_memory.append(("assistant", answer))
+# @measure_time
+def proactive_action(current_audio_file):
+    answer = get_random_ice_break()
 
     print(answer)
-    say(answer)
+    say(answer, current_audio_file)
+
+def proactive_thread(current_audio_file):
+    min_freq = 10
+    max_freq = min_freq * 2
+    while True:
+        time.sleep(random.randint(min_freq, max_freq))
+        proactive_action(current_audio_file)
