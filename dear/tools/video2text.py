@@ -4,13 +4,13 @@ import argparse
 from pydub import AudioSegment
 import math
 import subprocess
-
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Получение API ключа из переменных окружения
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Инициализация клиента OpenAI
+api_key = os.getenv("OPENAI_KEY")
+client = openai.OpenAI(api_key=api_key)
 
 def convert_to_mp3(input_file, output_file):
     command = [
@@ -48,10 +48,14 @@ def transcribe_audio(audio_file_path):
         
         # Открытие и отправка файла в API
         with open(temp_filename, "rb") as audio_file:
-            transcript = openai.Audio.transcribe("whisper-1", audio_file)
+            response = client.audio.transcriptions.create(
+                model="whisper-1",
+                file=audio_file
+            )
+            transcript = response["text"]
         
         # Добавление транскрипции к полному тексту
-        full_transcript += transcript["text"] + " "
+        full_transcript += transcript + " "
         
         # Удаление временного файла
         os.remove(temp_filename)
